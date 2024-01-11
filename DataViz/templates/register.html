@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/images/register.css">
+    <title>Signup Page</title>
+</head>
+<body>
+    <h1>Signup Page</h1>
+    <form method="POST" action="/signup">
+        <label for="username">Username:</label>
+        <input type="text" name="username" required>
+
+        <label for="password">Password:</label>
+<input type="password" name="password" id="password" required>
+<span id="password-error" style="color: red;"></span>
+
+        <label for="phonenumber">Phone Number:</label>
+        <input type="tel" name="phonenumber" required>
+
+        <label for="address">Address:</label>
+        <textarea name="address" required></textarea>
+
+        <input type="submit" value="Signup">
+        
+      </form>
+      <p class="message">Already have an account? <a href="/login">Sign in</a></p>
+    
+      <script>
+        document.getElementById('password').addEventListener('input', function() {
+            var password = this.value;
+            var passwordError = document.getElementById('password-error');
+            var isValid = true;
+        
+            // Check password length
+            if (password.length < 9) {
+                isValid = false;
+                passwordError.textContent = 'Password must be at least 9 characters long.';
+            } else {
+                passwordError.textContent = '';
+            }
+        
+            // Check if the password starts with a capital letter
+            if (!/^[A-Z]/.test(password)) {
+                isValid = false;
+                passwordError.textContent += ' Password must start with a capital letter.';
+            }
+        
+            // Check if the password contains at least one number
+            if (!/\d/.test(password)) {
+                isValid = false;
+                passwordError.textContent += ' Password must contain at least one number.';
+            }
+        
+            // Check if the password contains at least one special character
+            if (!/[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(password)) {
+                isValid = false;
+                passwordError.textContent += ' Password must contain at least one special character.';
+            }
+        
+            // Update the error message
+            if (isValid) {
+                passwordError.textContent = '';
+            }
+        });
+        </script>
+
+</body>
+</html>

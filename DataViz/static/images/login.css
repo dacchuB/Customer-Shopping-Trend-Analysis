@@ -1,0 +1,66 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background-image: url('https://img.freepik.com/premium-vector/business-analysis-with-data-report-smartphone-app-analysing-growth-graph-sales-report-3d-innovation-technology-successful-business-digital-marketing-strategy-planning-futuristic_251139-614.jpg');
+    background-size: cover; /* Adjust as needed */
+    background-position: center center; /* Optional background color */
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: white;
+}
+
+form {
+    max-width: 300px;
+    width: 100%;
+    padding: 20px;
+    background: rgba(255, 255, 253, 0.397);
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+input[type="submit"] {
+    background-color: #4caf50;
+    color: #fff;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #8bc456;
+}
+
+.message {
+    text-align: center;
+    margin-top: 10px;
+    color: yellow;
+}
+
+.message a {
+    color: red;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.message a:hover {
+    text-decoration: underline;
+}

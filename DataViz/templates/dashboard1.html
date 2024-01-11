@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/style.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <!--cahrt js CDN-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+
+    <title>
+        Analytics Dashboard
+    </title>
+    <style>
+        body {
+            background-color: #e6d76ab3;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: black;
+            /* Set your desired background color here */
+            padding: 10px;
+            /* Add padding for better visual appearance */
+            color: #fcfbfb;
+            /* Set the text color to contrast with the background */
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <br>
+        <div class="header">
+            <h3>Analytics Dashboard</h3>
+            <button class="btn btn-primary" type="button" onclick="redirectToDashboard()">Back</button>
+
+            <script>
+                function redirectToDashboard() {
+                    // Redirect to the "/dashboard" URL
+                    window.location.href = '/dashboard';
+                }
+            </script>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-6">
+                <h3>Item Purchased and Review Rating</h3>
+                <canvas id="myChart3"></canvas>
+            </div>
+            <div class="col-6">
+                <h3>Compare Payment Method by Item Purchased</h3>
+                <canvas id="myChart6"></canvas>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-6">
+                <h3>Distribution of Purchases Across Different Genders</h3>
+                <canvas id="myChart8"></canvas>
+            </div>
+
+            <div class="col-6">
+                <h3>Review  Rate Frequency</h3>
+                <canvas id="myChart7"></canvas>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-6">
+                
+                <h3>Shops With Maximum Visitor </h3>
+        <canvas id="myChart10"></canvas>
+
+            </div>
+            <div class="col-6">
+                <h3>Areas With High Purchase Density</h3>
+                <canvas id="myChart9"></canvas>
+            </div>
+        </div>
+
+        <br>
+
+
+
+    </div>
+
+
+
+    <script>
+        //Line plot
+        var xhttDonGraph = new XMLHttpRequest();
+        xhttDonGraph.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var jsonData = JSON.parse(this.responseText);
+
+                // Separate data for each category
+                var reviewRateData = jsonData.find(entry => entry.category === 'review_rate');
+                var itemPurchasedData = jsonData.find(entry => entry.category === 'item_purchased');
+
+                // Render line chart
+                renderLineChart('lineChart', reviewRateData.values, itemPurchasedData.values);
+            }
+        };
+
+        xhttDonGraph.open("GET", "http://127.0.0.1:5000/graph-data3", true);
+        xhttDonGraph.send();
+
+        function renderLineChart(canvasId, reviewRateValues, itemPurchasedValues) {
+            var labels = ['1', '2', '3', '4', '5', '6'];
+
+            var ctx = document.getElementById('myChart3').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Review Rate',
+                        data: reviewRateValues,
+                        borderWidth: 1
+                    }, {
+                        label: 'Item Purchased',
+                        data: itemPurchasedValues,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Review Rate and Item Purchased'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Monthly Visitors'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        //barplot
+
+        var xhttpBarGraph = new XMLHttpRequest();
+        xhttpBarGraph.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var jsonData = JSON.parse(this.responseText);
+
+                var monthlyData = jsonData.monthly.map(entry => entry.count);
+                var weeklyData = jsonData.weekly.map(entry => entry.count);
+                var dailyData = jsonData.daily.map(entry => entry.count);
+
+                const ctx = document.getElementById('myChart5');
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: [...Array(12).keys()].map(i => `Month ${i + 1}`),
+                        datasets: [
+                            {
+                                label: 'Monthly',
+                                data: monthlyData,
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Weekly',
+                                data: weeklyData,
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Daily',
+                                data: dailyData,
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        };
+
+        xhttpBarGraph.open('GET', 'http://127.0.0.1:5000/graph-data5', true);
+        xhttpBarGraph.send();
+
+        //bar
+        var xhttpData = new XMLHttpRequest();
+        xhttpData.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var jsonData = JSON.parse(this.responseText);
+
+                var items = Array.from(new Set(jsonData.map(entry => entry.item_purchased)));
+                var paymentMethods = Array.from(new Set(jsonData.map(entry => entry.payment_method)));
+
+                var datasets = paymentMethods.map(paymentMethod => {
+                    return {
+                        label: paymentMethod,
+                        data: items.map(item => {
+                            var match = jsonData.find(entry => entry.item_purchased === item && entry.payment_method === paymentMethod);
+                            return match ? match.count : 0;
+                        }),
+                        backgroundColor: getRandomColor(),
+                    };
+                });
+
+                var ctx = document.getElementById('myChart6').getContext('2d');
+                var myStackedBarChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: items,
+                        datasets: datasets,
+                    },
+                    options: {
+                        indexAxis: 'x', // Set indexAxis to 'x' for x-axis labels
+                        scales: {
+                            x: {
+                                stacked: true,
+                                title: {
+                                    display: true,
+                                    text: 'Payment Method',
+                                },
+                            },
+                            y: {
+                                stacked: true,
+                                title: {
+                                    display: true,
+                                    text: 'Item Purchased', // Label for the y-axis
+                                },
+                            },
+                        },
+                    },
+                });
+            }
+        };
+
+        xhttpData.open('GET', 'http://127.0.0.1:5000/graph-data6', true);
+        xhttpData.send();
+
+        // Function to generate random color
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+
+        //Grouped plot
+        var xhttpData = new XMLHttpRequest();
+        xhttpData.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var jsonData = JSON.parse(this.responseText);
+
+                var reviewRates = jsonData.map(entry => entry.review_rate);
+
+                var ctx = document.getElementById('myChart7').getContext('2d');
+                var myHistogram = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Array.from(new Set(reviewRates)),
+                        datasets: [{
+                            label: 'Frequency',
+                            data: reviewRates.reduce(function (acc, rate) {
+                                acc[rate] = (acc[rate] || 0) + 1;
+                                return acc;
+                            }, {}),
+                            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                
+                                type: 'linear',
+                                position: 'bottom',
+                                title: {
+                                    display: true,
+                                    text: 'Review Rate',
+                                }            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Frequency',
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        };
+        xhttpData.open('GET', 'http://127.0.0.1:5000/graph-data7', true);
+        xhttpData.send();
+
+        //line plot
+        document.addEventListener("DOMContentLoaded", function () {
+            var xhttpData = new XMLHttpRequest();
+            xhttpData.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var jsonData = JSON.parse(this.responseText);
+
+                    var genderDistribution = jsonData.genderDistribution;
+
+                    var ctx = document.getElementById('myChart8').getContext('2d');
+                    var myBarChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Male', 'Female', 'Other'],
+                            datasets: [
+                                {
+                                    label: 'Purchase Distribution by Gender',
+
+                                    data: genderDistribution.map(entry => entry.purchase_count),
+                                    backgroundColor: getRandomColors(genderDistribution.length),
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'category',
+                                    position: 'bottom',
+                                    display: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Gender'
+                                    },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Gender'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    stepSize: 1,
+                                    display: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Purchase Count'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+
+            xhttpData.open('GET', 'http://127.0.0.1:5000/graph-data8', true);
+            xhttpData.send();
+
+            // Function to generate random colors
+            function getRandomColors(count) {
+                var colors = [];
+                for (var i = 0; i < count; i++) {
+                    colors.push('#' + Math.floor(Math.random() * 16777215).toString(16));
+                }
+                return colors;
+            }
+        });
+
+        //scatter
+        document.addEventListener("DOMContentLoaded", function () {
+            var xhttpData = new XMLHttpRequest();
+            xhttpData.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var jsonData = JSON.parse(this.responseText);
+
+                    var locationDistribution = jsonData.locationDistribution;
+
+                    var ctx = document.getElementById('myChart9').getContext('2d');
+                    var scatterChartData = {
+                        datasets: []
+                    };
+
+                    // Group data by location
+                    var groupedData = groupBy(locationDistribution, 'location');
+
+                    // Iterate through grouped data and create a dataset for each location
+                    Object.keys(groupedData).forEach(function (location, index) {
+                        var dataPoints = groupedData[location];
+                        var color = getRandomColor();
+                        scatterChartData.datasets.push({
+                            label: 'Location: ' + location,
+                            data: dataPoints.map(entry => ({
+                                x: index + 1, // Index as x-coordinate
+                                y: entry.purchase_count,
+                                r: 8, // Radius of data points
+                            })),
+                            backgroundColor: color,
+                            borderColor: color,
+                            borderWidth: 1
+                        });
+                    });
+
+                    var myScatterChart = new Chart(ctx, {
+                        type: 'scatter',
+                        data: scatterChartData,
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'linear',
+                                    position: 'bottom',
+                                    title: {
+                                        display: true,
+                                        text: 'Location Index'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Purchase Count'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+
+            xhttpData.open('GET', 'http://127.0.0.1:5000/graph-data9', true);
+            xhttpData.send();
+
+            // Function to generate a random color
+            function getRandomColor() {
+                return '#' + Math.floor(Math.random() * 16777215).toString(16);
+            }
+
+            // Function to group data by a specific key
+            function groupBy(array, key) {
+                return array.reduce(function (acc, obj) {
+                    var property = obj[key];
+                    acc[property] = acc[property] || [];
+                    acc[property].push(obj);
+                    return acc;
+                }, {});
+            }
+        });
+
+//bar chart 
+document.addEventListener("DOMContentLoaded", function () {
+            var xhttpData = new XMLHttpRequest();
+            xhttpData.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var jsonData = JSON.parse(this.responseText);
+
+                    var locationData = jsonData.locationData;
+                    var maxLocation = jsonData.maxLocation;
+
+                    var ctx = document.getElementById('myChart10').getContext('2d');
+                    var datasets = [];
+                    var labels = [];
+                    var backgroundColors = [];
+
+                    locationData.forEach(function (entry) {
+                        labels.push(entry.location);
+                        datasets.push(entry.visitor_count);
+
+                        // Highlight the bar for the location with the maximum count
+                        if (entry.location === maxLocation.location) {
+                            backgroundColors.push('#FF5733'); // Highlight color
+                        } else {
+                            backgroundColors.push(getRandomColor());
+                        }
+                    });
+
+                    var myBarChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Visitor Count by Location',
+                                    data: datasets,
+                                    backgroundColor: backgroundColors,
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'category',
+                                    position: 'bottom',
+                                    display: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Location'
+                                    },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Location'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    stepSize: 1,
+                                    display: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Visitor Count'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    labels: {
+                                        filter: function (legendItem, chartData) {
+                                            return legendItem.index === 0; // Display only the first legend item
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // Display the location with maximum visitors in the label
+                    var maxLocationLabel = document.createElement('p');
+                    maxLocationLabel.textContent = 'Location with Maximum Visitors: ' + maxLocation.location;
+                    document.body.appendChild(maxLocationLabel);
+                }
+            };
+
+            xhttpData.open('GET', 'http://127.0.0.1:5000/graph-data11', true);
+            xhttpData.send();
+
+            // Function to generate a random color
+            function getRandomColor() {
+                return '#' + Math.floor(Math.random() * 16777215).toString(16);
+            }
+        });
+    </script>
+</body>
+
+</html>
